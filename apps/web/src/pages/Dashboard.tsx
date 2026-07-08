@@ -51,7 +51,6 @@ export function Dashboard({
 
   useEffect(() => {
     if (!hasDatabase) {
-      setAlerts([]);
       return;
     }
 

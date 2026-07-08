@@ -128,7 +128,7 @@ _OAUTH_PROVIDER_CONFIGS = {
         "enabled": os.environ.get("OAUTH_GOOGLE_ENABLED", "false").lower() == "true",
         "client_id": os.environ.get("OAUTH_GOOGLE_CLIENT_ID"),
         "client_secret": os.environ.get("OAUTH_GOOGLE_CLIENT_SECRET"),
-        "token_auth_method": "client_secret_post",
+        "token_auth_method": "client_secret_post",  # nosec B105 - OAuth auth method identifier, not a password.
         "discovery_url": "https://accounts.google.com/.well-known/openid-configuration",
         "scopes": "openid email profile",
         "display_name": "Google",
@@ -141,7 +141,7 @@ _OAUTH_PROVIDER_CONFIGS = {
         "team_id": os.environ.get("OAUTH_APPLE_TEAM_ID"),
         "key_id": os.environ.get("OAUTH_APPLE_KEY_ID"),
         "private_key": os.environ.get("OAUTH_APPLE_PRIVATE_KEY"),
-        "token_auth_method": "client_secret_post",
+        "token_auth_method": "client_secret_post",  # nosec B105 - OAuth auth method identifier, not a password.
         "discovery_url": "https://appleid.apple.com/.well-known/openid-configuration",
         "scopes": "openid email name",
         "display_name": "Apple",
@@ -152,7 +152,7 @@ _OAUTH_PROVIDER_CONFIGS = {
         "client_id": os.environ.get("OAUTH_MICROSOFT_CLIENT_ID"),
         "client_secret": os.environ.get("OAUTH_MICROSOFT_CLIENT_SECRET"),
         "tenant_id": os.environ.get("OAUTH_MICROSOFT_TENANT_ID", "common"),
-        "token_auth_method": "client_secret_post",
+        "token_auth_method": "client_secret_post",  # nosec B105 - OAuth auth method identifier, not a password.
         "discovery_url": None,  # Built dynamically from tenant_id
         "scopes": "openid email profile",
         "display_name": "Microsoft",

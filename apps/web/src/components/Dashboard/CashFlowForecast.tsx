@@ -96,17 +96,20 @@ export function CashFlowForecast({ hasDatabase }: CashFlowForecastProps) {
 
   useEffect(() => {
     if (!hasDatabase) {
-      setForecast(null);
       return;
     }
 
     let cancelled = false;
-    setLoading(true);
-    setError(false);
 
-    api.getCashFlowForecast(startingBalance, Number(days))
+    Promise.resolve()
+      .then(() => {
+        if (cancelled) return null;
+        setLoading(true);
+        setError(false);
+        return api.getCashFlowForecast(startingBalance, Number(days));
+      })
       .then((response) => {
-        if (!cancelled) setForecast(response);
+        if (!cancelled && response) setForecast(response);
       })
       .catch(() => {
         if (!cancelled) {

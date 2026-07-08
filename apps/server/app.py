@@ -6745,7 +6745,7 @@ def oauth_callback(provider):
         "client_id": cfg["client_id"],
         "code_verifier": code_verifier,
     }
-    token_request_kwargs = {"data": token_data, "timeout": 10}
+    token_request_kwargs = {"data": token_data}
 
     if provider == "apple":
         apple_client_secret = _generate_apple_client_secret()
@@ -6756,7 +6756,7 @@ def oauth_callback(provider):
         token_data["client_secret"] = apple_client_secret
     else:
         token_auth_method = _resolve_token_auth_method(provider, cfg, metadata)
-        if token_auth_method == "client_secret_basic":
+        if token_auth_method == "client_secret_basic":  # nosec B105 - OAuth auth method identifier.
             if not cfg.get("client_secret"):
                 return jsonify(
                     {
@@ -6766,10 +6766,10 @@ def oauth_callback(provider):
                 ), 502
             token_data.pop("client_id", None)
             token_request_kwargs["auth"] = (cfg["client_id"], cfg["client_secret"])
-        elif token_auth_method == "client_secret_post":
+        elif token_auth_method == "client_secret_post":  # nosec B105 - OAuth auth method identifier.
             if cfg.get("client_secret"):
                 token_data["client_secret"] = cfg["client_secret"]
-        elif token_auth_method == "none":
+        elif token_auth_method == "none":  # nosec B105 - OAuth public-client auth method identifier.
             pass
         else:
             return jsonify(
@@ -6777,7 +6777,9 @@ def oauth_callback(provider):
             ), 502
 
     try:
-        token_resp = http_requests.post(token_endpoint, **token_request_kwargs)
+        token_resp = http_requests.post(
+            token_endpoint, timeout=10, **token_request_kwargs
+        )
         token_resp.raise_for_status()
         token_json = token_resp.json()
     except Exception as e:
