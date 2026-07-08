@@ -109,7 +109,7 @@ export function Dashboard({
             {alerts.slice(0, 4).map((alert) => {
               const bill = bills.find((item) => item.id === alert.bill_id);
               return (
-                <Paper key={`${alert.type}-${alert.bill_id}`} withBorder p="sm" radius="sm" bg="white">
+                <Paper key={`${alert.type}-${alert.bill_id}`} withBorder p="sm" radius="sm">
                   <Group justify="space-between" wrap="nowrap">
                     <div>
                       <Group gap="xs">

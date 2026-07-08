@@ -6,17 +6,15 @@ A **secure multi-user** web application for tracking recurring expenses and inco
 
 ---
 
-## 🎉 What's New in v4.2.0
+## 🎉 What's New in v4.2.1
 
-**Provider-Neutral Outbound Email** - Self-hosters can send BillManager emails through their own SMTP provider or keep using Resend.
+**Dark Mode Reminder Alert Readability** - Dashboard reminder alerts now keep bill names readable in night mode.
 
 ### Highlights
 
-- **Bring Your Own SMTP** - Configure SMTP host, port, TLS/SSL, credentials, timeout, sender, and app URL with environment variables
-- **Resend Compatibility** - Existing `RESEND_API_KEY` installs continue to work, with explicit `EMAIL_PROVIDER=resend` support
-- **Unified Email Enablement** - Password reset, verification, invitations, shared bill invites, and email OTP now use one provider-neutral send path
-- **Self-Hosted Documentation** - Compose and environment examples now recommend external SMTP providers or relays instead of bundling a production mail server
-- **Test Coverage** - SMTP, Resend, provider selection, helper contracts, and password-reset non-enumeration behavior are covered by focused backend tests
+- **Theme-Aware Alert Cards** - Reminder alert bill names no longer disappear on white cards while dark mode is active
+- **Consistent Overdue Alerts** - Overdue bill alert cards use the same dark-mode-safe surface treatment
+- **Patch Release Metadata** - Web, API, OpenAPI, and release notes now report v4.2.1
 
 ---
 

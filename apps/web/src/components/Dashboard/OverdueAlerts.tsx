@@ -53,7 +53,7 @@ export function OverdueAlerts({ bills, onPay }: OverdueAlertsProps) {
           const amount = bill.varies ? (bill.avg_amount || 0) : (bill.amount || 0);
 
           return (
-            <Paper key={bill.id} withBorder p="sm" radius="sm" bg="white">
+            <Paper key={bill.id} withBorder p="sm" radius="sm">
               <Group justify="space-between" wrap="nowrap">
                 <Box style={{ flex: 1, minWidth: 0 }}>
                   <Text fw={500} truncate style={{ maxWidth: 200 }}>

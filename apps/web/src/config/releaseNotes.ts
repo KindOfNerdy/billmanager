@@ -46,6 +46,20 @@ export interface ReleaseNote {
 
 export const releaseNotes: ReleaseNote[] = [
   {
+    version: '4.2.1',
+    date: '2026-07-08',
+    title: 'Dark Mode Reminder Alert Readability',
+    sections: [
+      {
+        heading: 'Bug Fixes',
+        items: [
+          'Reminder alert cards now use theme-aware surfaces so bill names stay readable in dark mode',
+          'Overdue alert cards use the same dark-mode-safe card treatment',
+        ],
+      },
+    ],
+  },
+  {
     version: '4.2.0',
     date: '2026-07-08',
     title: 'Provider-Neutral Outbound Email',
