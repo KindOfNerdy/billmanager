@@ -4,6 +4,7 @@ import { Modal, Stack, Text, Loader, Center, Paper, Group, SegmentedControl, Sim
 import { LineChart, BarChart } from '@mantine/charts';
 import { IconAlertCircle } from '@tabler/icons-react';
 import { getMonthlyPayments, ApiError } from '../api/client';
+import { formatCurrency, formatCurrencyAxis } from '../lib/currency';
 
 interface MonthlyTotalsChartProps {
   opened: boolean;
@@ -121,20 +122,20 @@ export function MonthlyTotalsChart({ opened, onClose }: MonthlyTotalsChartProps)
             <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="sm">
               <Paper p="sm" withBorder>
                 <Text size="xs" c="dimmed">Total Spent</Text>
-                <Text size="lg" fw={700} c="violet">${totalSpent.toFixed(2)}</Text>
+                <Text size="lg" fw={700} c="violet">{formatCurrency(totalSpent)}</Text>
               </Paper>
               <Paper p="sm" withBorder>
                 <Text size="xs" c="dimmed">Monthly Avg</Text>
-                <Text size="lg" fw={700} c="blue">${avgMonthly.toFixed(2)}</Text>
+                <Text size="lg" fw={700} c="blue">{formatCurrency(avgMonthly)}</Text>
               </Paper>
               <Paper p="sm" withBorder>
                 <Text size="xs" c="dimmed">Highest</Text>
-                <Text size="lg" fw={700} c="red">${maxMonth.total.toFixed(2)}</Text>
+                <Text size="lg" fw={700} c="red">{formatCurrency(maxMonth.total)}</Text>
                 <Text size="xs" c="dimmed">{maxMonth.label}</Text>
               </Paper>
               <Paper p="sm" withBorder>
                 <Text size="xs" c="dimmed">Lowest</Text>
-                <Text size="lg" fw={700} c="green">${minMonth.total === Infinity ? 0 : minMonth.total.toFixed(2)}</Text>
+                <Text size="lg" fw={700} c="green">{formatCurrency(minMonth.total === Infinity ? 0 : minMonth.total)}</Text>
                 <Text size="xs" c="dimmed">{minMonth.total === Infinity ? 'N/A' : minMonth.label}</Text>
               </Paper>
             </SimpleGrid>
@@ -156,14 +157,14 @@ export function MonthlyTotalsChart({ opened, onClose }: MonthlyTotalsChartProps)
                         <Paper px="md" py="sm" withBorder shadow="md" radius="md">
                           <Text fw={500}>{item.label}</Text>
                           <Text c="dimmed" size="sm">
-                            ${item.total.toFixed(2)}
+                            {formatCurrency(item.total)}
                           </Text>
                         </Paper>
                       );
                     },
                   }}
                   yAxisProps={{
-                    tickFormatter: (value: number) => `$${value}`,
+                    tickFormatter: (value: number) => formatCurrencyAxis(value),
                   }}
                 />
               ) : (
@@ -183,14 +184,14 @@ export function MonthlyTotalsChart({ opened, onClose }: MonthlyTotalsChartProps)
                         <Paper px="md" py="sm" withBorder shadow="md" radius="md">
                           <Text fw={500}>{item.label}</Text>
                           <Text c="dimmed" size="sm">
-                            ${item.total.toFixed(2)}
+                            {formatCurrency(item.total)}
                           </Text>
                         </Paper>
                       );
                     },
                   }}
                   yAxisProps={{
-                    tickFormatter: (value: number) => `$${value}`,
+                    tickFormatter: (value: number) => formatCurrencyAxis(value),
                   }}
                 />
               )}

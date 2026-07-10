@@ -1,6 +1,7 @@
 import { Modal, Stack, Text, Paper, Group, Button, Badge, Box } from '@mantine/core';
 import { IconCoin, IconCoinOff } from '@tabler/icons-react';
 import type { Bill } from '../api/client';
+import { formatCurrency } from '../lib/currency';
 
 interface DayDetailModalProps {
   opened: boolean;
@@ -49,13 +50,13 @@ export function DayDetailModal({ opened, onClose, date, bills, onPay, onEdit }: 
               {expenses.length > 0 && (
                 <Paper withBorder p="xs" radius="sm" bg="red.0">
                   <Text size="xs" c="red.7" fw={500}>Expenses</Text>
-                  <Text fw={700} c="red.8">${expenseTotal.toFixed(2)}</Text>
+                  <Text fw={700} c="red.8">{formatCurrency(expenseTotal)}</Text>
                 </Paper>
               )}
               {deposits.length > 0 && (
                 <Paper withBorder p="xs" radius="sm" bg="green.0">
                   <Text size="xs" c="green.7" fw={500}>Deposits</Text>
-                  <Text fw={700} c="green.8">${depositTotal.toFixed(2)}</Text>
+                  <Text fw={700} c="green.8">{formatCurrency(depositTotal)}</Text>
                 </Paper>
               )}
             </Group>
@@ -88,7 +89,7 @@ export function DayDetailModal({ opened, onClose, date, bills, onPay, onEdit }: 
                           )}
                         </Group>
                         <Text size="sm" c="dimmed">
-                          ${amount.toFixed(2)}
+                          {formatCurrency(amount)}
                           {bill.account && ` - ${bill.account}`}
                         </Text>
                       </Box>

@@ -28,6 +28,7 @@ import {
 import * as api from '../../api/client';
 import type { CashFlowForecast as CashFlowForecastData } from '../../api/client';
 import { BillIcon } from '../BillIcon';
+import { formatCurrency, formatCurrencyAxis, getCurrencySymbol } from '../../lib/currency';
 
 interface CashFlowForecastProps {
   hasDatabase: boolean;
@@ -36,15 +37,6 @@ interface CashFlowForecastProps {
 }
 
 const STORAGE_KEY = 'billmanager:forecast-starting-balance';
-
-const currencyFormatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-});
-
-function formatCurrency(value: number | null | undefined): string {
-  return currencyFormatter.format(value ?? 0);
-}
 
 function formatShortDate(dateStr: string): string {
   const [year, month, day] = dateStr.split('-').map(Number);
@@ -152,7 +144,7 @@ export function CashFlowForecast({ hasDatabase, framed = true, showHeader = true
           <Group gap="sm" align="flex-end">
             <NumberInput
               label="Starting balance"
-              prefix="$"
+              prefix={getCurrencySymbol()}
               decimalScale={2}
               value={startingBalance}
               onChange={(value) => setStartingBalance(typeof value === 'number' ? value : 0)}
@@ -228,7 +220,7 @@ export function CashFlowForecast({ hasDatabase, framed = true, showHeader = true
                 curveType="linear"
                 withTooltip
                 yAxisProps={{
-                  tickFormatter: (value: number) => `$${value}`,
+                  tickFormatter: (value: number) => formatCurrencyAxis(value),
                 }}
               />
             )}

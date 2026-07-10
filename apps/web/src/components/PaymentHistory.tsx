@@ -21,6 +21,7 @@ import type { Payment, Bill } from '../api/client';
 import { getPayments, updatePayment, deletePayment, ApiError } from '../api/client';
 import { PaymentHistoryChart } from './PaymentHistoryChart';
 import { parseLocalDate, formatDateString, formatDateForAPI } from '../utils/date';
+import { formatCurrency, getCurrencySymbol } from '../lib/currency';
 
 interface PaymentHistoryProps {
   opened: boolean;
@@ -169,7 +170,7 @@ export function PaymentHistory({
               <Group justify="space-between">
                 <Text size="sm" fw={500}>
                   Your Portion:{' '}
-                  {shareInfo.my_portion !== null ? `$${shareInfo.my_portion.toFixed(2)}` : 'N/A'}
+                  {shareInfo.my_portion !== null ? formatCurrency(shareInfo.my_portion) : 'N/A'}
                 </Text>
                 {shareInfo.my_portion_paid ? (
                   <Badge size="sm" color="green" variant="filled">
@@ -235,14 +236,14 @@ export function PaymentHistory({
                       <NumberInput
                         value={editAmount}
                         onChange={(val) => setEditAmount(val === '' ? '' : Number(val))}
-                        prefix="$"
+                        prefix={getCurrencySymbol()}
                         decimalScale={2}
                         fixedDecimalScale
                         size="xs"
                         w={100}
                       />
                     ) : (
-                      <Text fw={500}>${payment.amount.toFixed(2)}</Text>
+                      <Text fw={500}>{formatCurrency(payment.amount)}</Text>
                     )}
                   </Table.Td>
                   <Table.Td>

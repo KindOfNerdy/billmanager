@@ -1,6 +1,7 @@
 import { Paper, Text, Group, SimpleGrid, ThemeIcon, Stack } from '@mantine/core';
 import { IconReceipt, IconCalendar, IconAlertTriangle, IconCoin } from '@tabler/icons-react';
 import type { Bill } from '../../api/client';
+import { formatCurrency } from '../../lib/currency';
 
 interface StatCardsProps {
   bills: Bill[];
@@ -110,12 +111,12 @@ export function StatCards({ bills, monthlyPaid, onStatClick }: StatCardsProps) {
               Monthly Total
             </Text>
             <Text fw={700} size="xl" c="green">
-              ${monthlyTotal.toFixed(2)}
+              {formatCurrency(monthlyTotal)}
             </Text>
             <Group gap="xs">
-              <Text size="xs" c="green.6" fw={500}>${monthlyPaid.toFixed(2)} paid</Text>
+              <Text size="xs" c="green.6" fw={500}>{formatCurrency(monthlyPaid)} paid</Text>
               <Text size="xs" c="dimmed">|</Text>
-              <Text size="xs" c="orange.6" fw={500}>${monthlyRemaining.toFixed(2)} remaining</Text>
+              <Text size="xs" c="orange.6" fw={500}>{formatCurrency(monthlyRemaining)} remaining</Text>
             </Group>
           </Stack>
           <ThemeIcon color="green" variant="light" size="lg" radius="md">

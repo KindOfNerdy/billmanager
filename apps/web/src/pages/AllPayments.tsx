@@ -31,6 +31,7 @@ import { BillIcon } from '../components/BillIcon';
 import { IconEdit, IconTrash, IconCheck } from '@tabler/icons-react';
 import { exportPaymentsToCSV, exportPaymentsToPDF, printPayments } from '../utils/export';
 import { parseLocalDate, formatDateString, formatDateForAPI } from '../utils/date';
+import { formatCurrency, formatCurrencyAxis, getCurrencySymbol } from '../lib/currency';
 
 interface MonthlyChartData {
   month: string;
@@ -256,7 +257,7 @@ export function AllPayments() {
         </Group>
         <Group gap="sm">
           <Badge size="lg" variant="light">
-            {filteredPayments.length} payments · ${totalAmount.toFixed(2)} total
+            {filteredPayments.length} payments · {formatCurrency(totalAmount)} total
           </Badge>
           <Menu shadow="md" width={200}>
             <Menu.Target>
@@ -339,7 +340,7 @@ export function AllPayments() {
             />
             <NumberInput
               placeholder="Min amount"
-              prefix="$"
+              prefix={getCurrencySymbol()}
               value={amountMin}
               onChange={(val) => setAmountMin(val === '' ? '' : Number(val))}
               decimalScale={2}
@@ -347,7 +348,7 @@ export function AllPayments() {
             />
             <NumberInput
               placeholder="Max amount"
-              prefix="$"
+              prefix={getCurrencySymbol()}
               value={amountMax}
               onChange={(val) => setAmountMax(val === '' ? '' : Number(val))}
               decimalScale={2}
@@ -369,8 +370,8 @@ export function AllPayments() {
                   searchName && `"${searchName}"`,
                   dateFrom && `from ${formatDateString(formatDateForAPI(dateFrom))}`,
                   dateTo && `to ${formatDateString(formatDateForAPI(dateTo))}`,
-                  amountMin !== '' && `min $${amountMin}`,
-                  amountMax !== '' && `max $${amountMax}`,
+                  amountMin !== '' && `min ${formatCurrency(Number(amountMin))}`,
+                  amountMax !== '' && `max ${formatCurrency(Number(amountMax))}`,
                 ].filter(Boolean).join(', ')}
               </Text>
               <Badge size="sm" variant="light" color="blue">
@@ -424,14 +425,14 @@ export function AllPayments() {
                     <Paper px="md" py="sm" withBorder shadow="md" radius="md">
                       <Text fw={500}>{item.label}</Text>
                       <Text c="dimmed" size="sm">
-                        ${item.total.toFixed(2)}
+                        {formatCurrency(item.total)}
                       </Text>
                     </Paper>
                   );
                 },
               }}
               yAxisProps={{
-                tickFormatter: (value: number) => `$${value}`,
+                tickFormatter: (value: number) => formatCurrencyAxis(value),
               }}
             />
           </Collapse>
@@ -507,7 +508,7 @@ export function AllPayments() {
                         <NumberInput
                           value={editAmount}
                           onChange={(val) => setEditAmount(val === '' ? '' : Number(val))}
-                          prefix="$"
+                          prefix={getCurrencySymbol()}
                           decimalScale={2}
                           fixedDecimalScale
                           size="xs"
@@ -515,7 +516,7 @@ export function AllPayments() {
                         />
                       ) : (
                         <Text fw={500} c={isDeposit ? 'green' : undefined}>
-                          {isDeposit ? '+' : ''}${payment.amount.toFixed(2)}
+                          {isDeposit ? '+' : ''}{formatCurrency(payment.amount)}
                         </Text>
                       )}
                     </Table.Td>

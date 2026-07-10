@@ -9,6 +9,7 @@ import {
   Text,
 } from '@mantine/core';
 import type { Bill } from '../api/client';
+import { getCurrencySymbol } from '../lib/currency';
 
 interface PayModalProps {
   opened: boolean;
@@ -61,7 +62,7 @@ export function PayModal({ opened, onClose, onPay, bill }: PayModalProps) {
         <NumberInput
           label={isDeposit ? 'Deposit Amount' : 'Payment Amount'}
           placeholder="0.00"
-          prefix="$"
+          prefix={getCurrencySymbol()}
           decimalScale={2}
           fixedDecimalScale
           min={0}

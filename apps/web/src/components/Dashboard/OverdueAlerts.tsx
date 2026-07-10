@@ -1,6 +1,7 @@
 import { Paper, Text, Group, Button, Stack, Box, Alert } from '@mantine/core';
 import { IconAlertTriangle, IconCoin } from '@tabler/icons-react';
 import type { Bill } from '../../api/client';
+import { formatCurrency } from '../../lib/currency';
 
 interface OverdueAlertsProps {
   bills: Bill[];
@@ -60,7 +61,7 @@ export function OverdueAlerts({ bills, onPay }: OverdueAlertsProps) {
                     {bill.name}
                   </Text>
                   <Text size="xs" c="red">
-                    {daysOverdue} day{daysOverdue > 1 ? 's' : ''} overdue - ${amount.toFixed(2)}
+                    {daysOverdue} day{daysOverdue > 1 ? 's' : ''} overdue - {formatCurrency(amount)}
                   </Text>
                 </Box>
                 <Button

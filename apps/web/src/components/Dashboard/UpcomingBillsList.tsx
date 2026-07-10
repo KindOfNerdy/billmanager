@@ -2,6 +2,7 @@ import { Paper, Title, Text, Group, Button, Table, Badge, ThemeIcon, ActionIcon,
 import { IconCalendar, IconCash, IconEdit, IconUsers } from '@tabler/icons-react';
 import type { Bill } from '../../api/client';
 import { BillIcon } from '../BillIcon';
+import { formatCurrency } from '../../lib/currency';
 
 interface UpcomingBillsListProps {
   bills: Bill[];
@@ -186,12 +187,12 @@ export function UpcomingBillsList({ bills, onPay, onEdit, onViewPayments, onView
                     <Text c={bill.type === 'deposit' ? 'green' : 'red'}>
                       Varies{' '}
                       <Text span size="xs">
-                        (~${(bill.avg_amount || 0).toFixed(2)})
+                        (~{formatCurrency(bill.avg_amount || 0)})
                       </Text>
                     </Text>
                   ) : (
                     <Text fw={500} c={bill.type === 'deposit' ? 'green' : 'red'}>
-                      ${(bill.amount || 0).toFixed(2)}
+                      {formatCurrency(bill.amount || 0)}
                     </Text>
                   )}
                 </Table.Td>

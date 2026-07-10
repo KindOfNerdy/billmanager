@@ -3,6 +3,7 @@ import '@mantine/charts/styles.css';
 import { Paper, Title, Text, Stack, Group, Box, ColorSwatch } from '@mantine/core';
 import { PieChart } from '@mantine/charts';
 import type { AccountStats } from '../../api/client';
+import { formatCurrency } from '../../lib/currency';
 
 interface AccountPieChartProps {
   data: AccountStats[];
@@ -101,7 +102,7 @@ export function AccountPieChart({ data, loading }: AccountPieChartProps) {
               </Group>
               <Group gap="xs">
                 <Text size="sm" fw={500}>
-                  ${item.value.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  {formatCurrency(item.value)}
                 </Text>
                 <Text size="xs" c="dimmed">
                   ({((item.value / total) * 100).toFixed(1)}%)
@@ -113,7 +114,7 @@ export function AccountPieChart({ data, loading }: AccountPieChartProps) {
       </Group>
 
       <Text size="xs" c="dimmed" mt="md" ta="center">
-        Total: ${total.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+        Total: {formatCurrency(total)}
       </Text>
     </Paper>
   );

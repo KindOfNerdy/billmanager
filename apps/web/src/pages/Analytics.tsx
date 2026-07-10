@@ -35,6 +35,7 @@ import { CashFlowForecast } from '../components/Dashboard/CashFlowForecast';
 import { useAuth } from '../context/AuthContext';
 import { getAllPayments, getMonthlyComparison, getStatsByAccount, getStatsYearly } from '../api/client';
 import type { AccountStats, MonthlyComparison as MonthlyComparisonType, PaymentWithBill, YearlyStats } from '../api/client';
+import { formatCurrency, formatCurrencyAxis } from '../lib/currency';
 
 interface AnalyticsProps {
   hasDatabase: boolean;
@@ -96,10 +97,6 @@ function normalizeLayout(value: Partial<AnalyticsLayout> | null | undefined): An
     : [];
 
   return { order, collapsed };
-}
-
-function formatCurrency(value: number): string {
-  return value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function monthKey(date: Date): string {
@@ -398,7 +395,7 @@ export function Analytics({ hasDatabase, currentDb }: AnalyticsProps) {
       <Paper px="md" py="sm" withBorder shadow="md" radius="md">
         <Text fw={600}>{item.label}</Text>
         <Text size="sm" c="dimmed" mb="xs">
-          ${formatCurrency(item.total)}
+          {formatCurrency(item.total)}
         </Text>
         <Stack gap={3}>
           {trend.series
@@ -407,7 +404,7 @@ export function Analytics({ hasDatabase, currentDb }: AnalyticsProps) {
             .map((series) => (
               <Group key={series.name} gap="xs" justify="space-between" wrap="nowrap">
                 <Text size="xs">{series.label}</Text>
-                <Text size="xs" fw={600}>${formatCurrency(series.value)}</Text>
+                <Text size="xs" fw={600}>{formatCurrency(series.value)}</Text>
               </Group>
             ))}
         </Stack>
@@ -429,7 +426,7 @@ export function Analytics({ hasDatabase, currentDb }: AnalyticsProps) {
                     {currentYearData[0]} Expenses
                   </Text>
                   <Text fw={700} size="xl">
-                    ${formatCurrency(currentYearData[1].expenses)}
+                    {formatCurrency(currentYearData[1].expenses)}
                   </Text>
                 </div>
                 <ThemeIcon color="blue" variant="light" size="lg" radius="md">
@@ -447,7 +444,7 @@ export function Analytics({ hasDatabase, currentDb }: AnalyticsProps) {
                     {lastYearData[0]} Expenses
                   </Text>
                   <Text fw={700} size="xl">
-                    ${formatCurrency(lastYearData[1].expenses)}
+                    {formatCurrency(lastYearData[1].expenses)}
                   </Text>
                 </div>
                 <ThemeIcon color="gray" variant="light" size="lg" radius="md">
@@ -509,20 +506,20 @@ export function Analytics({ hasDatabase, currentDb }: AnalyticsProps) {
           <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="sm">
             <Paper p="sm" withBorder>
               <Text size="xs" c="dimmed">Total Spent</Text>
-              <Text size="lg" fw={700} c="violet">${formatCurrency(totalSpent)}</Text>
+              <Text size="lg" fw={700} c="violet">{formatCurrency(totalSpent)}</Text>
             </Paper>
             <Paper p="sm" withBorder>
               <Text size="xs" c="dimmed">Monthly Avg</Text>
-              <Text size="lg" fw={700} c="blue">${formatCurrency(avgMonthly)}</Text>
+              <Text size="lg" fw={700} c="blue">{formatCurrency(avgMonthly)}</Text>
             </Paper>
             <Paper p="sm" withBorder>
               <Text size="xs" c="dimmed">Highest</Text>
-              <Text size="lg" fw={700} c="red">${formatCurrency(maxMonth.total)}</Text>
+              <Text size="lg" fw={700} c="red">{formatCurrency(maxMonth.total)}</Text>
               <Text size="xs" c="dimmed">{maxMonth.label}</Text>
             </Paper>
             <Paper p="sm" withBorder>
               <Text size="xs" c="dimmed">Lowest</Text>
-              <Text size="lg" fw={700} c="green">${formatCurrency(minMonth.total === Infinity ? 0 : minMonth.total)}</Text>
+              <Text size="lg" fw={700} c="green">{formatCurrency(minMonth.total === Infinity ? 0 : minMonth.total)}</Text>
               <Text size="xs" c="dimmed">{minMonth.total === Infinity ? 'N/A' : minMonth.label}</Text>
             </Paper>
           </SimpleGrid>
@@ -538,7 +535,7 @@ export function Analytics({ hasDatabase, currentDb }: AnalyticsProps) {
               withTooltip
               tooltipProps={{ content: chartTooltip }}
               yAxisProps={{
-                tickFormatter: (value: number) => `$${value}`,
+                tickFormatter: (value: number) => formatCurrencyAxis(value),
               }}
             />
           ) : (
@@ -555,7 +552,7 @@ export function Analytics({ hasDatabase, currentDb }: AnalyticsProps) {
               withTooltip
               tooltipProps={{ content: chartTooltip }}
               yAxisProps={{
-                tickFormatter: (value: number) => `$${value}`,
+                tickFormatter: (value: number) => formatCurrencyAxis(value),
               }}
             />
           )}
@@ -601,19 +598,19 @@ export function Analytics({ hasDatabase, currentDb }: AnalyticsProps) {
                 <Divider mb={4} />
                 <Group justify="space-between" gap={4}>
                   <Text size="xs" c="dimmed">Expenses</Text>
-                  <Text size="sm" fw={600} c="red">-${formatCurrency(data.expenses)}</Text>
+                  <Text size="sm" fw={600} c="red">-{formatCurrency(data.expenses)}</Text>
                 </Group>
                 {data.deposits > 0 && (
                   <Group justify="space-between" gap={4}>
                     <Text size="xs" c="dimmed">Deposits</Text>
-                    <Text size="sm" fw={600} c="green">+${formatCurrency(data.deposits)}</Text>
+                    <Text size="sm" fw={600} c="green">+{formatCurrency(data.deposits)}</Text>
                   </Group>
                 )}
                 <Divider my={4} />
                 <Group justify="space-between" gap={4}>
                   <Text size="xs" fw={600}>Net</Text>
                   <Text size="sm" fw={700} c={net >= 0 ? 'green' : 'red'}>
-                    {net >= 0 ? '+' : '-'}${formatCurrency(Math.abs(net))}
+                    {net >= 0 ? '+' : '-'}{formatCurrency(Math.abs(net))}
                   </Text>
                 </Group>
               </Paper>

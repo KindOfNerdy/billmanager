@@ -592,6 +592,8 @@ export interface AppConfig {
   oauth_providers?: { id: string; display_name: string; icon: string }[];
   twofa_enabled?: boolean;
   passkeys_enabled?: boolean;
+  default_currency?: string;
+  default_locale?: string;
 }
 
 export interface AppConfigResponse {

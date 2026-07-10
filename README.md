@@ -192,6 +192,8 @@ postgresql://USERNAME:PASSWORD@HOST:PORT/DATABASE
 | `RESEND_API_KEY` | Resend API key for hosted/existing installs | None |
 | `ALLOWED_ORIGINS` | Comma-separated list of allowed CORS origins | Uses `APP_URL` or localhost |
 | `DEPLOYMENT_MODE` | `self-hosted` or `saas` | `self-hosted` |
+| `DEFAULT_CURRENCY` | ISO 4217 currency code used to format bill amounts | `USD` |
+| `DEFAULT_LOCALE` | BCP 47 locale used to format bill amounts | `en-US` |
 | `ENABLE_2FA` | Enable two-factor authentication flows | `false` |
 | `ENABLE_PASSKEYS` | Enable passkey (WebAuthn) support | `false` |
 | `WEBAUTHN_RP_ID` | WebAuthn relying party ID (domain only) | Derived from `APP_URL` |

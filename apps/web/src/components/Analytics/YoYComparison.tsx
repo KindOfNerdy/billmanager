@@ -3,6 +3,7 @@ import '@mantine/charts/styles.css';
 import { Paper, Title, Text, Box, Group, Stack } from '@mantine/core';
 import { BarChart } from '@mantine/charts';
 import type { MonthlyComparison } from '../../api/client';
+import { formatCurrency } from '../../lib/currency';
 
 interface YoYComparisonProps {
   data: MonthlyComparison | null;
@@ -101,7 +102,7 @@ export function YoYComparison({ data, loading }: YoYComparisonProps) {
                   <Group key={String(item.name)} gap="xs">
                     <Box style={{ width: 8, height: 8, background: item.color, borderRadius: 2 }} />
                     <Text size="sm">
-                      {String(item.name)}: ${Number(item.value ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      {String(item.name)}: {formatCurrency(Number(item.value ?? 0))}
                     </Text>
                   </Group>
                 ))}
@@ -114,11 +115,11 @@ export function YoYComparison({ data, loading }: YoYComparisonProps) {
       <Group justify="space-around" mt="md">
         <Stack gap={0} align="center">
           <Text size="xs" c="dimmed">{data.last_year} Total</Text>
-          <Text fw={600}>${totals.lastYear.toLocaleString('en-US', { minimumFractionDigits: 2 })}</Text>
+          <Text fw={600}>{formatCurrency(totals.lastYear)}</Text>
         </Stack>
         <Stack gap={0} align="center">
           <Text size="xs" c="dimmed">{data.current_year} Total</Text>
-          <Text fw={600}>${totals.currentYear.toLocaleString('en-US', { minimumFractionDigits: 2 })}</Text>
+          <Text fw={600}>{formatCurrency(totals.currentYear)}</Text>
         </Stack>
       </Group>
     </Paper>

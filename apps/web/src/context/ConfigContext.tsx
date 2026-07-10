@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import * as api from '../api/client';
+import { setCurrencyConfig } from '../lib/currency';
 
 export interface OAuthProviderInfo {
   id: string;
@@ -16,6 +17,8 @@ export interface AppConfig {
   oauth_providers?: OAuthProviderInfo[];
   twofa_enabled?: boolean;
   passkeys_enabled?: boolean;
+  default_currency?: string;
+  default_locale?: string;
 }
 
 interface ConfigContextType {
@@ -27,6 +30,8 @@ interface ConfigContextType {
   emailEnabled: boolean;
   billingEnabled: boolean;
   registrationEnabled: boolean;
+  currency: string;
+  locale: string;
   refetch: () => Promise<void>;
 }
 
@@ -39,6 +44,8 @@ const defaultConfig: AppConfig = {
   oauth_providers: [],
   twofa_enabled: false,
   passkeys_enabled: false,
+  default_currency: 'USD',
+  default_locale: 'en-US',
 };
 
 const ConfigContext = createContext<ConfigContextType>({
@@ -50,6 +57,8 @@ const ConfigContext = createContext<ConfigContextType>({
   emailEnabled: false,
   billingEnabled: false,
   registrationEnabled: false,
+  currency: 'USD',
+  locale: 'en-US',
   refetch: async () => {},
 });
 
@@ -62,6 +71,10 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
     try {
       const response = await api.getAppConfig();
       setConfig(response);
+      setCurrencyConfig(
+        response.default_locale ?? 'en-US',
+        response.default_currency ?? 'USD'
+      );
       setError(null);
     } catch (err) {
       console.error('Failed to fetch app config:', err);
@@ -86,6 +99,8 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
     emailEnabled: config?.email_enabled ?? false,
     billingEnabled: config?.billing_enabled ?? false,
     registrationEnabled: config?.registration_enabled ?? false,
+    currency: config?.default_currency ?? 'USD',
+    locale: config?.default_locale ?? 'en-US',
     refetch: fetchConfig,
   };
 

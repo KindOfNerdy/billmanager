@@ -26,6 +26,7 @@ import {
 import * as api from '../api/client';
 import type { SharedBill, PendingShare } from '../api/client';
 import { BillIcon } from './BillIcon';
+import { formatCurrency } from '../lib/currency';
 
 interface SharedBillsSectionProps {
   onRefresh?: () => void;
@@ -188,7 +189,7 @@ export function SharedBillsSection({ onRefresh }: SharedBillsSectionProps) {
                                 |
                               </Text>
                               <Text size="xs" c="dimmed">
-                                Your portion: ${share.my_portion.toFixed(2)}
+                                Your portion: {formatCurrency(share.my_portion)}
                               </Text>
                             </>
                           )}
@@ -269,15 +270,15 @@ export function SharedBillsSection({ onRefresh }: SharedBillsSectionProps) {
                           {shared.my_portion && shared.my_portion !== shared.bill.amount ? (
                             <>
                               <Text size="sm" fw={600} c={shared.bill.type === 'deposit' ? 'green' : 'red'}>
-                                ${shared.my_portion.toFixed(2)}
+                                {formatCurrency(shared.my_portion)}
                               </Text>
                               <Text size="xs" c="dimmed">
-                                of ${(shared.bill.amount || 0).toFixed(2)}
+                                of {formatCurrency(shared.bill.amount || 0)}
                               </Text>
                             </>
                           ) : (
                             <Text size="sm" fw={600} c={shared.bill.type === 'deposit' ? 'green' : 'red'}>
-                              ${(shared.bill.amount || 0).toFixed(2)}
+                              {formatCurrency(shared.bill.amount || 0)}
                             </Text>
                           )}
                         </Stack>

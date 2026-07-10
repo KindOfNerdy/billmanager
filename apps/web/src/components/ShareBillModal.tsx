@@ -19,6 +19,7 @@ import { IconShare, IconTrash, IconAlertCircle, IconCheck, IconEdit } from '@tab
 import * as api from '../api/client';
 import type { Bill, BillShare, UserSearchResult } from '../api/client';
 import { useConfig } from '../context/ConfigContext';
+import { formatCurrency, getCurrencySymbol } from '../lib/currency';
 
 interface ShareBillModalProps {
   opened: boolean;
@@ -285,13 +286,13 @@ export function ShareBillModal({ opened, onClose, bill }: ShareBillModalProps) {
                 onChange={(val) => setSplitValue(typeof val === 'number' ? val : undefined)}
                 min={0}
                 decimalScale={2}
-                prefix="$"
+                prefix={getCurrencySymbol()}
               />
             )}
 
             {portion !== null && bill?.amount && (
               <Text size="sm" c="dimmed">
-                Their portion: ${portion.toFixed(2)} of ${bill.amount.toFixed(2)}
+                Their portion: {formatCurrency(portion)} of {formatCurrency(bill.amount)}
               </Text>
             )}
 
@@ -362,7 +363,7 @@ export function ShareBillModal({ opened, onClose, bill }: ShareBillModalProps) {
                           onChange={(val) => setEditSplitValue(typeof val === 'number' ? val : undefined)}
                           min={0}
                           decimalScale={2}
-                          prefix="$"
+                          prefix={getCurrencySymbol()}
                           size="xs"
                         />
                       )}
@@ -390,7 +391,7 @@ export function ShareBillModal({ opened, onClose, bill }: ShareBillModalProps) {
                               ? '50/50'
                               : share.split_type === 'percentage'
                                 ? `${share.split_value}%`
-                                : `$${share.split_value?.toFixed(2)}`}
+                                : formatCurrency(share.split_value)}
                           </Badge>
                         )}
                       </Group>

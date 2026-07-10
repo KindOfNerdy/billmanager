@@ -2,6 +2,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import type { Bill, PaymentWithBill } from '../api/client';
 import { formatDateForAPI } from './date';
+import { formatCurrency } from '../lib/currency';
 
 // Format date for display
 function formatDate(dateStr: string): string {
@@ -69,7 +70,7 @@ export function exportBillsToCSV(bills: Bill[], filename?: string): void {
   const rows = bills.map(bill => [
     escapeCSV(bill.name),
     escapeCSV(bill.type === 'deposit' ? 'Deposit' : 'Expense'),
-    escapeCSV(bill.varies ? `Varies (~$${(bill.avg_amount || 0).toFixed(2)})` : `$${(bill.amount || 0).toFixed(2)}`),
+    escapeCSV(bill.varies ? `Varies (~${formatCurrency(bill.avg_amount || 0)})` : formatCurrency(bill.amount || 0)),
     escapeCSV(formatDate(bill.next_due)),
     escapeCSV(formatFrequency(bill)),
     escapeCSV(bill.account || ''),
@@ -105,8 +106,8 @@ export function exportBillsToPDF(bills: Bill[], filename?: string): void {
     .reduce((sum, b) => sum + (b.varies ? (b.avg_amount || 0) : (b.amount || 0)), 0);
 
   doc.setTextColor(0);
-  doc.text(`Total Monthly Expenses: $${totalExpenses.toFixed(2)}`, 14, 38);
-  doc.text(`Total Monthly Income: $${totalDeposits.toFixed(2)}`, 14, 44);
+  doc.text(`Total Monthly Expenses: ${formatCurrency(totalExpenses)}`, 14, 38);
+  doc.text(`Total Monthly Income: ${formatCurrency(totalDeposits)}`, 14, 44);
 
   // Table
   autoTable(doc, {
@@ -115,7 +116,7 @@ export function exportBillsToPDF(bills: Bill[], filename?: string): void {
     body: bills.map(bill => [
       bill.name,
       bill.type === 'deposit' ? 'Deposit' : 'Expense',
-      bill.varies ? `~$${(bill.avg_amount || 0).toFixed(2)}` : `$${(bill.amount || 0).toFixed(2)}`,
+      bill.varies ? `~${formatCurrency(bill.avg_amount || 0)}` : formatCurrency(bill.amount || 0),
       formatDate(bill.next_due),
       formatFrequency(bill),
       bill.account || '-',
@@ -140,7 +141,7 @@ export function exportPaymentsToCSV(
   const rows = payments.map(payment => [
     escapeCSV(payment.bill_name),
     escapeCSV(formatDate(payment.payment_date)),
-    escapeCSV(`$${payment.amount.toFixed(2)}`),
+    escapeCSV(formatCurrency(payment.amount)),
   ]);
 
   const csvContent = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
@@ -187,7 +188,7 @@ export function exportPaymentsToPDF(
   const totalAmount = payments.reduce((sum, p) => sum + p.amount, 0);
   doc.setTextColor(0);
   doc.text(`Total Payments: ${payments.length}`, 14, 38);
-  doc.text(`Total Amount: $${totalAmount.toFixed(2)}`, 14, 44);
+  doc.text(`Total Amount: ${formatCurrency(totalAmount)}`, 14, 44);
 
   // Table
   autoTable(doc, {
@@ -196,12 +197,12 @@ export function exportPaymentsToPDF(
     body: payments.map(payment => [
       payment.bill_name,
       formatDate(payment.payment_date),
-      `$${payment.amount.toFixed(2)}`,
+      formatCurrency(payment.amount),
     ]),
     styles: { fontSize: 9 },
     headStyles: { fillColor: [16, 185, 129] }, // Emerald green (#10B981)
     alternateRowStyles: { fillColor: [240, 253, 244] }, // Light emerald
-    foot: [['', 'Total:', `$${totalAmount.toFixed(2)}`]],
+    foot: [['', 'Total:', formatCurrency(totalAmount)]],
     footStyles: { fillColor: [16, 185, 129], textColor: 255, fontStyle: 'bold' },
   });
 
@@ -244,7 +245,7 @@ export function printPayments(
   // Summary
   const totalAmount = payments.reduce((sum, p) => sum + p.amount, 0);
   doc.text(`Total Payments: ${payments.length}`, 14, 33);
-  doc.text(`Total Amount: $${totalAmount.toFixed(2)}`, 14, 38);
+  doc.text(`Total Amount: ${formatCurrency(totalAmount)}`, 14, 38);
 
   // Clean table with no colors
   autoTable(doc, {
@@ -253,7 +254,7 @@ export function printPayments(
     body: payments.map(payment => [
       payment.bill_name,
       formatDate(payment.payment_date),
-      `$${payment.amount.toFixed(2)}`,
+      formatCurrency(payment.amount),
     ]),
     styles: {
       fontSize: 9,
@@ -271,7 +272,7 @@ export function printPayments(
     alternateRowStyles: {
       fillColor: [255, 255, 255] // White background (no alternating colors)
     },
-    foot: [['', 'Total:', `$${totalAmount.toFixed(2)}`]],
+    foot: [['', 'Total:', formatCurrency(totalAmount)]],
     footStyles: {
       fillColor: [255, 255, 255], // White background
       textColor: [0, 0, 0], // Black text
@@ -306,8 +307,8 @@ export function printBills(bills: Bill[]): void {
     .filter(b => b.type === 'deposit' && !b.archived)
     .reduce((sum, b) => sum + (b.varies ? (b.avg_amount || 0) : (b.amount || 0)), 0);
 
-  doc.text(`Total Monthly Expenses: $${totalExpenses.toFixed(2)}`, 14, 33);
-  doc.text(`Total Monthly Income: $${totalDeposits.toFixed(2)}`, 14, 38);
+  doc.text(`Total Monthly Expenses: ${formatCurrency(totalExpenses)}`, 14, 33);
+  doc.text(`Total Monthly Income: ${formatCurrency(totalDeposits)}`, 14, 38);
 
   // Clean table with no colors
   autoTable(doc, {
@@ -316,7 +317,7 @@ export function printBills(bills: Bill[]): void {
     body: bills.map(bill => [
       bill.name,
       bill.type === 'deposit' ? 'Deposit' : 'Expense',
-      bill.varies ? `~$${(bill.avg_amount || 0).toFixed(2)}` : `$${(bill.amount || 0).toFixed(2)}`,
+      bill.varies ? `~${formatCurrency(bill.avg_amount || 0)}` : formatCurrency(bill.amount || 0),
       formatDate(bill.next_due),
       formatFrequency(bill),
       bill.account || '-',

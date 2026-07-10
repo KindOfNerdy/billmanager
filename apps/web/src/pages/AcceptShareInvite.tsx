@@ -17,6 +17,7 @@ import {
 import { IconAlertCircle, IconCheck, IconCurrencyDollar } from '@tabler/icons-react';
 import { getShareInviteDetails, acceptShareByToken } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { formatCurrency } from '../lib/currency';
 
 export function AcceptShareInvite() {
   const navigate = useNavigate();
@@ -161,7 +162,7 @@ export function AcceptShareInvite() {
               <Text size="sm" c="dimmed" mb={5}>Full Amount</Text>
               <Group gap="xs">
                 <IconCurrencyDollar size={20} />
-                <Text size="lg" fw={500}>${inviteData?.bill_amount.toFixed(2)}</Text>
+                <Text size="lg" fw={500}>{formatCurrency(inviteData?.bill_amount)}</Text>
               </Group>
             </div>
 
@@ -170,7 +171,7 @@ export function AcceptShareInvite() {
                 <Text size="sm" c="dimmed" mb={5}>Your Portion</Text>
                 <Group gap="xs">
                   <Badge color="blue" size="lg">
-                    ${inviteData.my_portion.toFixed(2)}
+                    {formatCurrency(inviteData.my_portion)}
                   </Badge>
                   {inviteData.split_type === 'percentage' && (
                     <Text size="sm" c="dimmed">({inviteData.split_value}%)</Text>
@@ -235,7 +236,7 @@ export function AcceptShareInvite() {
             <Text size="sm" c="dimmed" mb={5}>Full Amount</Text>
             <Group gap="xs">
               <IconCurrencyDollar size={20} />
-              <Text size="lg" fw={500}>${inviteData?.bill_amount.toFixed(2)}</Text>
+              <Text size="lg" fw={500}>{formatCurrency(inviteData?.bill_amount)}</Text>
             </Group>
           </div>
 
@@ -244,7 +245,7 @@ export function AcceptShareInvite() {
               <Text size="sm" c="dimmed" mb={5}>Your Portion</Text>
               <Group gap="xs">
                 <Badge color="blue" size="lg">
-                  ${inviteData.my_portion.toFixed(2)}
+                  {formatCurrency(inviteData.my_portion)}
                 </Badge>
                 {inviteData.split_type === 'percentage' && (
                   <Text size="sm" c="dimmed">({inviteData.split_value}%)</Text>

@@ -4,6 +4,7 @@ import { useDisclosure } from '@mantine/hooks';
 import { IconAlertTriangle, IconBellRinging } from '@tabler/icons-react';
 import type { Bill, ReminderAlert } from '../api/client';
 import { getReminderAlerts } from '../api/client';
+import { formatCurrency } from '../lib/currency';
 
 interface ReminderAlertsWidgetProps {
   bills: Bill[];
@@ -95,7 +96,7 @@ export function ReminderAlertsWidget({ bills, hasDatabase, onPayBill }: Reminder
                     </Group>
                     <Text size="sm" c="dimmed">
                       {alert.message}
-                      {alert.amount !== null ? ` - $${alert.amount.toFixed(2)}` : ''}
+                      {alert.amount !== null ? ` - ${formatCurrency(alert.amount)}` : ''}
                     </Text>
                   </Stack>
                   {bill && bill.type !== 'deposit' && !bill.is_shared && (

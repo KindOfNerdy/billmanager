@@ -4,6 +4,7 @@ import { Paper, Text, Loader, Center } from '@mantine/core';
 import { AreaChart } from '@mantine/charts';
 import { getBillMonthlyPayments } from '../api/client';
 import type { MonthlyBillPayment } from '../api/client';
+import { formatCurrency, formatCurrencyAxis } from '../lib/currency';
 
 interface PaymentHistoryChartProps {
   billName: string | null;
@@ -101,14 +102,14 @@ export function PaymentHistoryChart({ billName }: PaymentHistoryChartProps) {
               <Paper px="md" py="sm" withBorder shadow="md" radius="md">
                 <Text fw={500}>{item.label}</Text>
                 <Text c="dimmed" size="sm">
-                  ${item.total.toFixed(2)}
+                  {formatCurrency(item.total)}
                 </Text>
               </Paper>
             );
           },
         }}
         yAxisProps={{
-          tickFormatter: (value: number) => `$${value}`,
+          tickFormatter: (value: number) => formatCurrencyAxis(value),
         }}
       />
     </Paper>

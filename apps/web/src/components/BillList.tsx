@@ -23,6 +23,7 @@ import { exportBillsToCSV, exportBillsToPDF, printBills } from '../utils/export'
 import type { Bill } from '../api/client';
 import { getAccounts, getCategories, markSharePaid } from '../api/client';
 import { BillIcon } from './BillIcon';
+import { formatCurrency } from '../lib/currency';
 import type { BillFilter } from '../App';
 
 interface BillListProps {
@@ -490,17 +491,17 @@ export function BillList({
                     <Text c={bill.type === 'deposit' ? 'green' : 'red'}>
                       Varies{' '}
                       <Text span size="xs">
-                        (~${(bill.avg_amount || 0).toFixed(2)})
+                        (~{formatCurrency(bill.avg_amount || 0)})
                       </Text>
                     </Text>
                   ) : (
                     <>
                       <Text fw={500} c={bill.type === 'deposit' ? 'green' : 'red'}>
-                        ${(bill.amount || 0).toFixed(2)}
+                        {formatCurrency(bill.amount || 0)}
                       </Text>
                       {bill.is_shared && bill.share_info?.my_portion !== null && bill.share_info?.my_portion !== undefined && (
                         <Text size="xs" c="dimmed">
-                          My portion: ${bill.share_info.my_portion.toFixed(2)}
+                          My portion: {formatCurrency(bill.share_info.my_portion)}
                         </Text>
                       )}
                     </>
@@ -593,7 +594,7 @@ export function BillList({
               <Paper p="md" withBorder bg="gray.0">
                 <Group justify="space-between">
                   <Text size="sm" c="dimmed">Your portion:</Text>
-                  <Text fw={600} size="lg">${confirmPayBill.share_info.my_portion.toFixed(2)}</Text>
+                  <Text fw={600} size="lg">{formatCurrency(confirmPayBill.share_info.my_portion)}</Text>
                 </Group>
               </Paper>
             )}

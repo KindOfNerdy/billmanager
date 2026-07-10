@@ -29,6 +29,7 @@ import { IconPicker } from './IconPicker';
 import { BillIcon } from './BillIcon';
 import { ShareBillModal } from './ShareBillModal';
 import { formatDateForAPI, parseLocalDate } from '../utils/date';
+import { getCurrencySymbol } from '../lib/currency';
 
 interface BillFormValues {
   name: string;
@@ -400,7 +401,7 @@ export function BillModal({ opened, onClose, onSave, onArchive, onUnarchive, onD
               <NumberInput
                 label="Amount"
                 placeholder="0.00"
-                prefix="$"
+                prefix={getCurrencySymbol()}
                 decimalScale={2}
                 fixedDecimalScale
                 disabled={form.values.varies}

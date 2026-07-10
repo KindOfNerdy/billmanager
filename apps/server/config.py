@@ -247,6 +247,11 @@ OAUTH_OIDC_SKIP_EMAIL_VERIFICATION = (
 ENABLE_2FA = os.environ.get("ENABLE_2FA", "false").lower() == "true"
 ENABLE_PASSKEYS = os.environ.get("ENABLE_PASSKEYS", "false").lower() == "true"
 
+# Default currency for formatting amounts in the UI (ISO 4217 code)
+DEFAULT_CURRENCY = os.environ.get("DEFAULT_CURRENCY", "USD").upper()
+# Default locale for formatting numbers/dates in the UI (BCP 47 tag)
+DEFAULT_LOCALE = os.environ.get("DEFAULT_LOCALE", "en-US")
+
 # WebAuthn Relying Party configuration
 WEBAUTHN_RP_ID = os.environ.get("WEBAUTHN_RP_ID", "localhost")
 WEBAUTHN_RP_NAME = os.environ.get("WEBAUTHN_RP_NAME", "BillManager")
@@ -272,6 +277,8 @@ def get_public_config():
         ],
         "twofa_enabled": ENABLE_2FA,
         "passkeys_enabled": ENABLE_PASSKEYS,
+        "default_currency": DEFAULT_CURRENCY,
+        "default_locale": DEFAULT_LOCALE,
         "tier_limits": TIER_LIMITS if is_saas() else None,
         "pricing": {
             "basic": {
