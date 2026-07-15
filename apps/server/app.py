@@ -888,7 +888,9 @@ def calculate_next_due_date(
     else:
         current_date = current_due
 
-    if frequency == "weekly":
+    if frequency == "once":
+        return current_date
+    elif frequency == "weekly":
         return current_date + timedelta(days=7)
     elif frequency in ("bi-weekly", "biweekly"):
         return current_date + timedelta(days=14)
@@ -1953,7 +1955,9 @@ def pay_bill(bill_id):
             notes=data.get("notes"),
         )
         db.session.add(payment)
-        if data.get("advance_due", True):
+        if bill.frequency == "once":
+            bill.archived = True
+        elif data.get("advance_due", True):
             # Update existing bill instead of creating new
             freq_config = (
                 json.loads(bill.frequency_config) if bill.frequency_config else {}
@@ -2762,13 +2766,16 @@ def process_auto_payments():
     for bill in auto_bills:
         payment = Payment(bill_id=bill.id, amount=bill.amount or 0, payment_date=today)
         db.session.add(payment)
-        next_due = calculate_next_due_date(
-            bill.due_date,
-            bill.frequency,
-            bill.frequency_type,
-            json.loads(bill.frequency_config),
-        )
-        bill.due_date = next_due.isoformat()
+        if bill.frequency == "once":
+            bill.archived = True
+        else:
+            next_due = calculate_next_due_date(
+                bill.due_date,
+                bill.frequency,
+                bill.frequency_type,
+                json.loads(bill.frequency_config),
+            )
+            bill.due_date = next_due.isoformat()
     db.session.commit()
     return jsonify({"message": "Processed", "processed_count": len(auto_bills)})
 
@@ -3848,6 +3855,9 @@ def jwt_get_bills():
 
     current_user_id = g.jwt_user_id
     include_archived = request.args.get("include_archived", "false").lower() == "true"
+    bill_type = request.args.get("type")
+    if bill_type not in ("expense", "deposit"):
+        bill_type = None
 
     # Handle "all databases" mode
     result = resolve_accessible_db_ids()
@@ -3859,6 +3869,8 @@ def jwt_get_bills():
     query = Bill.query.filter(Bill.database_id.in_(accessible_db_ids))
     if not include_archived:
         query = query.filter_by(archived=False)
+    if bill_type:
+        query = query.filter_by(type=bill_type)
     owned_bills = query.order_by(Bill.due_date).all()
 
     # Get share counts for owned bills (how many people each bill is shared with)
@@ -3887,6 +3899,8 @@ def jwt_get_bills():
     )
     if not include_archived:
         shared_bill_query = shared_bill_query.filter(Bill.archived == False)
+    if bill_type:
+        shared_bill_query = shared_bill_query.filter(Bill.type == bill_type)
     shared_bills_data = shared_bill_query.order_by(Bill.due_date).all()
 
     # Create a lookup for share info
@@ -4318,7 +4332,9 @@ def jwt_pay_bill(bill_id):
     )
     db.session.add(payment)
 
-    if data.get("advance_due", True):
+    if bill.frequency == "once":
+        bill.archived = True
+    elif data.get("advance_due", True):
         freq_config = json.loads(bill.frequency_config) if bill.frequency_config else {}
         next_due = calculate_next_due_date(
             bill.due_date, bill.frequency, bill.frequency_type, freq_config
@@ -4371,6 +4387,54 @@ def jwt_get_bill_payments(bill_id):
     ]
 
     return jsonify({"success": True, "data": result})
+
+
+@api_v2_bp.route("/bills/<int:bill_id>/payments/monthly", methods=["GET"])
+@limiter.limit("60 per minute")
+@jwt_required
+def jwt_get_bill_monthly_payments(bill_id):
+    """Get up to 12 monthly payment totals for one bill."""
+    if not g.jwt_db_name:
+        return jsonify({"success": False, "error": "X-Database header required"}), 400
+
+    bill = db.get_or_404(Bill, bill_id)
+
+    # Keep the same ownership and shared-bill authorization semantics as the
+    # bill payment-history endpoint above.
+    has_access = check_bill_access(bill) is True
+    if not has_access:
+        share = BillShare.query.filter_by(
+            bill_id=bill_id, shared_with_user_id=g.jwt_user_id, status="accepted"
+        ).first()
+        has_access = share is not None
+
+    if not has_access:
+        return jsonify({"success": False, "error": "Access denied"}), 403
+
+    results = (
+        db.session.query(
+            func.to_char(
+                func.to_date(Payment.payment_date, "YYYY-MM-DD"), "YYYY-MM"
+            ).label("month"),
+            func.sum(Payment.amount),
+            func.count(Payment.id),
+        )
+        .filter(Payment.bill_id == bill_id)
+        .group_by("month")
+        .order_by(desc("month"))
+        .limit(12)
+        .all()
+    )
+
+    return jsonify(
+        {
+            "success": True,
+            "data": [
+                {"month": row[0], "total": float(row[1]), "count": row[2]}
+                for row in results
+            ],
+        }
+    )
 
 
 @api_v2_bp.route("/payments", methods=["GET"])
@@ -4584,13 +4648,13 @@ def jwt_share_bill(bill_id):
         return access
 
     # Get share parameters
-    identifier = data.get("shared_with", "").strip().lower()  # username or email
+    identifier = data.get("identifier", "").strip().lower()  # username or email
     split_type = data.get("split_type")  # None, 'percentage', 'fixed', 'equal'
     split_value = data.get("split_value")
 
     if not identifier:
         return jsonify(
-            {"success": False, "error": "shared_with (username or email) is required"}
+            {"success": False, "error": "identifier (username or email) is required"}
         ), 400
 
     # Validate split configuration
@@ -6211,13 +6275,16 @@ def jwt_process_auto_payments():
     for bill in auto_bills:
         payment = Payment(bill_id=bill.id, amount=bill.amount or 0, payment_date=today)
         db.session.add(payment)
-        next_due = calculate_next_due_date(
-            bill.due_date,
-            bill.frequency,
-            bill.frequency_type,
-            json.loads(bill.frequency_config),
-        )
-        bill.due_date = next_due.isoformat()
+        if bill.frequency == "once":
+            bill.archived = True
+        else:
+            next_due = calculate_next_due_date(
+                bill.due_date,
+                bill.frequency,
+                bill.frequency_type,
+                json.loads(bill.frequency_config),
+            )
+            bill.due_date = next_due.isoformat()
         processed.append(
             {"bill_id": bill.id, "name": bill.name, "amount": bill.amount or 0}
         )
@@ -6234,33 +6301,59 @@ def jwt_process_auto_payments():
 @api_v2_bp.route("/auth/change-password", methods=["POST"])
 @limiter.limit("20 per minute;60 per hour")
 def jwt_change_password():
-    """Change password (for users with password_change_required or via change_token)."""
+    """Change password.
+
+    Supports two modes:
+    - `change_token` (unauthenticated): for the forced first-login /
+      password-reset flow.
+    - `current_password` (authenticated via Authorization header): for a
+      logged-in user voluntarily changing their own password.
+    """
     data = request.get_json(force=True, silent=True)
     if not data:
         return jsonify({"success": False, "error": "Invalid JSON body"}), 400
 
     change_token = data.get("change_token")
+    current_password = data.get("current_password")
     new_password = data.get("new_password")
 
-    if not change_token or not new_password:
+    if not new_password or not (change_token or current_password):
         return jsonify(
-            {"success": False, "error": "change_token and new_password are required"}
+            {
+                "success": False,
+                "error": "new_password and either change_token or current_password are required",
+            }
         ), 400
 
     is_valid, error = validate_password(new_password)
     if not is_valid:
         return jsonify({"success": False, "error": error}), 400
 
-    user = User.find_by_change_token(change_token)
-    if not user:
-        return jsonify({"success": False, "error": "Invalid change token"}), 401
-    if not user.verify_change_token(change_token):
-        return jsonify({"success": False, "error": "Change token expired"}), 401
+    if change_token:
+        user = User.find_by_change_token(change_token)
+        if not user:
+            return jsonify({"success": False, "error": "Invalid change token"}), 401
+        if not user.verify_change_token(change_token):
+            return jsonify({"success": False, "error": "Change token expired"}), 401
+        user.password_change_required = False
+        user.change_token = None
+        user.change_token_expires = None
+    else:
+        auth_header = request.headers.get("Authorization")
+        if not auth_header or not auth_header.startswith("Bearer "):
+            return jsonify(
+                {"success": False, "error": "Missing or invalid Authorization header"}
+            ), 401
+        payload = verify_access_token(auth_header.split(" ")[1])
+        if not payload:
+            return jsonify({"success": False, "error": "Invalid or expired token"}), 401
+        user = db.session.get(User, payload["user_id"])
+        if not user or not user.check_password(current_password):
+            return jsonify(
+                {"success": False, "error": "Current password is incorrect"}
+            ), 401
 
     user.set_password(new_password)
-    user.password_change_required = False
-    user.change_token = None
-    user.change_token_expires = None
     db.session.commit()
 
     # Optionally auto-login after password change
@@ -8448,6 +8541,101 @@ def jwt_create_invitation():
     ), 201
 
 
+@api_v2_bp.route("/invitations/info", methods=["GET"])
+@limiter.limit("20 per minute")
+def jwt_get_invitation_info():
+    """Get public user-invitation details by token."""
+    token = request.args.get("token", "").strip()
+    if not token:
+        return jsonify({"success": False, "error": "Token is required"}), 400
+
+    invite = UserInvite.find_by_token(token)
+    if not invite or not invite.verify_token(token):
+        return jsonify({"success": False, "error": "Invalid invitation token"}), 404
+    if invite.is_accepted:
+        return jsonify(
+            {"success": False, "error": "Invitation has already been accepted"}
+        ), 400
+    if invite.is_expired:
+        return jsonify({"success": False, "error": "Invitation has expired"}), 400
+
+    inviter = db.session.get(User, invite.invited_by_id)
+    return jsonify(
+        {
+            "success": True,
+            "data": {
+                "email": invite.email,
+                "invited_by": inviter.username if inviter else "Unknown",
+                "expires_at": invite.expires_at.isoformat(),
+            },
+        }
+    )
+
+
+@api_v2_bp.route("/invitations/accept", methods=["POST"])
+@limiter.limit("10 per minute")
+def jwt_accept_invitation():
+    """Accept a public user invitation and create the invited account."""
+    data = request.get_json(silent=True) or {}
+    token = data.get("token", "").strip()
+    username = data.get("username", "").strip()
+    password = data.get("password", "")
+
+    if not token or not username or not password:
+        return jsonify(
+            {
+                "success": False,
+                "error": "Token, username, and password are required",
+            }
+        ), 400
+
+    invite = UserInvite.find_by_token(token)
+    if not invite or not invite.verify_token(token):
+        return jsonify({"success": False, "error": "Invalid invitation token"}), 400
+    if invite.is_accepted:
+        return jsonify(
+            {"success": False, "error": "Invitation has already been accepted"}
+        ), 400
+    if invite.is_expired:
+        return jsonify({"success": False, "error": "Invitation has expired"}), 400
+
+    if User.query.filter_by(username=username).first():
+        return jsonify({"success": False, "error": "Username is already taken"}), 400
+
+    new_user = User(
+        username=username,
+        email=invite.email,
+        role=invite.role,
+        created_by_id=invite.invited_by_id,
+        # An invite can only be accepted by someone who received its email.
+        email_verified_at=datetime.datetime.now(datetime.timezone.utc),
+    )
+    new_user.set_password(password)
+    db.session.add(new_user)
+
+    if invite.database_ids:
+        for db_id_str in invite.database_ids.split(","):
+            try:
+                database = db.session.get(Database, int(db_id_str))
+            except ValueError:
+                continue
+            if database:
+                new_user.accessible_databases.append(database)
+
+    invite.accepted_at = datetime.datetime.now(datetime.timezone.utc)
+    db.session.commit()
+
+    return jsonify(
+        {
+            "success": True,
+            "data": {
+                "message": "Account created successfully",
+                "username": username,
+            },
+        }
+    ), 201
+
+
 @api_v2_bp.route("/invitations/<int:invite_id>", methods=["DELETE"])
 @jwt_admin_required
 def jwt_delete_invitation(invite_id):
@@ -8727,6 +8915,12 @@ def jwt_get_version():
             },
         }
     )
+
+
+@api_v2_bp.route("/ping", methods=["GET"])
+def jwt_ping():
+    """Return a lightweight unauthenticated liveness response."""
+    return jsonify({"success": True, "data": {"status": "ok"}})
 
 
 @api_v2_bp.route("/config", methods=["GET"])
