@@ -893,3 +893,35 @@ class TestOneTimeBills:
             updated = db_session.get(Bill, bill_id)
             assert updated.archived is True
             assert updated.due_date == '2025-01-15'
+
+
+class TestGetBillSharesSelfHosted:
+    """Regression: found via live testing on a self-hosted instance.
+
+    jwt_get_bill_shares unconditionally checked `database.owner_id !=
+    g.jwt_user_id`, but owner_id is only ever set in SaaS mode - in
+    self-hosted mode it's always None, so `None != <user id>` was always
+    true and the endpoint 403'd for everyone, including the bill's own
+    owner. ShareBillModal silently caught the error and always rendered
+    "not shared with anyone", regardless of actual share state.
+    """
+
+    def test_owner_can_list_shares_in_self_hosted_mode(
+        self, client, auth_headers_with_db, db_session, test_bill, admin_user, regular_user
+    ):
+        share = BillShare(
+            bill_id=test_bill.id,
+            owner_user_id=admin_user.id,
+            shared_with_user_id=regular_user.id,
+            shared_with_identifier=regular_user.username,
+            identifier_type='username',
+            status='pending',
+        )
+        db_session.add(share)
+        db_session.commit()
+
+        response = client.get(f'/api/v2/bills/{test_bill.id}/shares', headers=auth_headers_with_db)
+        assert response.status_code == 200
+        data = json.loads(response.data)['data']
+        assert len(data) == 1
+        assert data[0]['shared_with'] == regular_user.username

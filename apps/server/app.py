@@ -3563,9 +3563,12 @@ def jwt_get_bill_shares(bill_id):
     if access is not True:
         return access
 
-    # Security check: Only the database owner can view shares
+    # In SaaS mode, only the database owner can view shares. owner_id is
+    # never set in self-hosted mode, so this check only applies to SaaS -
+    # otherwise it rejected every request unconditionally (owner_id is
+    # always None there, so `None != current_user_id` was always true).
     database = db.session.get(Database, bill.database_id)
-    if not database or database.owner_id != g.jwt_user_id:
+    if is_saas() and (not database or database.owner_id != g.jwt_user_id):
         return jsonify({"success": False, "error": "Access denied"}), 403
 
     shares = BillShare.query.filter_by(bill_id=bill_id).all()
