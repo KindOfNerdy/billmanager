@@ -52,6 +52,8 @@ function getFrequencyText(bill: Bill, t: TFunction): string {
   try { frequencyConfig = bill.frequency_config ? JSON.parse(bill.frequency_config) : {}; } catch { /* ignore malformed config */ }
 
   switch (bill.frequency) {
+    case 'once':
+      return t('common.frequency.once');
     case 'weekly':
       return t('common.frequency.weekly');
     case 'bi-weekly':
@@ -203,30 +205,29 @@ export function BillList({
     );
   }
 
-  if (bills.length === 0) {
-    // Different messages for filtered vs unfiltered empty state
-    if (hasActiveFilter) {
-      return (
-        <Card p="xl" withBorder>
-          <Stack align="center" gap="md">
-            <Text size="lg" c="dimmed">
-              {t('billList.noMatchFilter')}
-            </Text>
-            {onClearFilter && (
-              <Button
-                variant="light"
-                leftSection={<IconFilterOff size={16} />}
-                onClick={onClearFilter}
-              >
-                {t('billList.clearFilter')}
-              </Button>
-            )}
-          </Stack>
-        </Card>
-      );
-    }
-
-    return (
+  // Empty-state messaging differs for an active filter/search vs. genuinely
+  // no bills - but the toolbar (including search) below always renders
+  // regardless, so an all-archived list is never a dead end (search is the
+  // only way to reveal archived bills; see App.tsx's filteredBills logic).
+  const emptyState = bills.length === 0 ? (
+    hasActiveFilter ? (
+      <Card p="xl" withBorder>
+        <Stack align="center" gap="md">
+          <Text size="lg" c="dimmed">
+            {t('billList.noMatchFilter')}
+          </Text>
+          {onClearFilter && (
+            <Button
+              variant="light"
+              leftSection={<IconFilterOff size={16} />}
+              onClick={onClearFilter}
+            >
+              {t('billList.clearFilter')}
+            </Button>
+          )}
+        </Stack>
+      </Card>
+    ) : (
       <Card p="xl" withBorder>
         <Stack align="center" gap="md">
           <Text size="lg" c="dimmed">
@@ -237,8 +238,8 @@ export function BillList({
           </Button>
         </Stack>
       </Card>
-    );
-  }
+    )
+  ) : null;
 
   return (
     <Stack gap="md">
@@ -380,6 +381,9 @@ export function BillList({
         </Paper>
       )}
 
+      {emptyState}
+
+      {bills.length > 0 && (
       <Paper withBorder>
         <Table striped highlightOnHover>
           <Table.Thead>
@@ -557,6 +561,7 @@ export function BillList({
           </Table.Tbody>
         </Table>
       </Paper>
+      )}
 
       {totalPages > 1 && (
         <Group justify="center">

@@ -22,6 +22,8 @@ function formatFrequency(bill: Bill, t: TFunction): string {
   try { frequencyConfig = bill.frequency_config ? JSON.parse(bill.frequency_config) : {}; } catch { /* ignore malformed config */ }
 
   switch (bill.frequency) {
+    case 'once':
+      return t('common.frequency.once');
     case 'weekly':
       return t('common.frequency.weekly');
     case 'bi-weekly':

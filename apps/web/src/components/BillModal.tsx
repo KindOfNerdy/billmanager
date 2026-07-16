@@ -561,8 +561,8 @@ export function BillModal({ opened, onClose, onSave, onArchive, onUnarchive, onD
               {...form.getInputProps('notes')}
             />
 
-            {/* Share button for existing bills */}
-            {bill && !bill.archived && (
+            {/* Share button for existing bills (archived bills can still be shared retroactively) */}
+            {bill && (
               <>
                 <Divider label={t('billModal.sharingLabel')} labelPosition="center" />
                 <Group justify="center">
